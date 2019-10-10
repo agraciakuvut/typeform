@@ -1,5 +1,5 @@
 {
-  "name": "watr/typeform",
+  "name": "agraciakuvut/typeform",
   "description": "A simple wrapper for Typeform API calls",
   "type": "library",
   "license": "MIT",
@@ -11,7 +11,8 @@
     }
   ],
   "require": {
-    "guzzlehttp/guzzle": "~6.0"
+    "guzzlehttp/guzzle": "~6.0",
+    "ext-json": "*"
   },
   "require-dev": {
     "phpunit/phpunit": "~7",

@@ -1,9 +1,11 @@
 <?php
+
 namespace WATR;
 
 use GuzzleHttp\Client;
 use WATR\Models\Form;
 use WATR\Models\FormResponse;
+use WATR\Models\Webhook;
 use WATR\Models\WebhookResponse;
 
 /**
@@ -12,7 +14,7 @@ use WATR\Models\WebhookResponse;
 class Typeform
 {
     /**
-     * @var  GuzzleHttp\Client
+     * @var  Client
      */
     protected $http;
 
@@ -31,7 +33,7 @@ class Typeform
         $this->apiKey = $apiKey;
         $this->http = new Client([
             'base_uri' => $this->baseUri,
-            'headers' => [
+            'headers'  => [
                 'Authorization' => 'Bearer ' . $this->apiKey,
             ]
         ]);
@@ -39,6 +41,8 @@ class Typeform
 
     /**
      * Get form information
+     * @param $formId
+     * @return Form
      */
     public function getForm($formId)
     {
@@ -49,6 +53,8 @@ class Typeform
 
     /**
      * Get form responses
+     * @param $formId
+     * @return array
      */
     public function getResponses($formId)
     {
@@ -65,19 +71,28 @@ class Typeform
 
     /**
      * Register webhook for form
+     * @param string $formId
+     * @param string $url
+     * @param string $tag
+     * @return Webhook
+     * @throws \Exception
      */
-    public function registerWebhook(Form $form, string $url, string $tag = "response")
+    public function registerWebhook(string $formId, string $url, string $tag = "response")
     {
         $response = $this->http->put(
-            "/forms/" . $form->id . "/webhooks/" . $tag,
+            "/forms/" . $formId . "/webhooks/" . $tag,
             [
                 'json' => [
-                    'url' => $url,
+                    'url'     => $url,
                     'enabled' => true,
                 ]
             ]
         );
-        return json_decode($response->getBody());
+        $statusCode = $response->getStatusCode();
+        if ($statusCode < 200 || $statusCode > 300) {
+            throw new \Exception('Failed to unregister webhook, form_id: ' . $formId . ', tag: ' . $tag);
+        }
+        return new Webhook(json_decode($response->getBody()));
     }
 
 
@@ -85,19 +100,73 @@ class Typeform
     {
         $form->addHiddenFields($fields);
 
-        $response = $this->http->put(
+        $this->http->put(
             "/forms/" . $form->id,
             [
-              'json' => (array) $form->getRaw(),
+                'json' => (array)$form->getRaw()
             ]
         );
     }
 
     /**
      * Parse incoming webhook
+     * @param $json
+     * @return WebhookResponse
      */
     public static function parseWebhook($json)
     {
         return new WebhookResponse($json);
+    }
+
+
+    /**
+     * Get form information
+     * @param $formId
+     * @return Webhook[]
+     */
+    public function getWebhooks($formId)
+    {
+        $response = $this->http->get("/forms/" . $formId . "/webhooks");
+        $body = json_decode($response->getBody());
+        $responses = [];
+        if (isset($body->items)) {
+            foreach ($body->items as $item) {
+                $responses[] = new Webhook($item);
+            }
+        }
+        return $responses;
+    }
+
+
+    /**
+     * @param string $formId
+     * @param string $tag
+     * @return bool
+     * @throws \Exception
+     */
+    public function unRegisterWebhook(string $formId, string $tag = "response")
+    {
+        $response = $this->http->delete("/forms/" . $formId . "/webhooks/" . $tag);
+        $statusCode = $response->getStatusCode();
+        if ($statusCode < 200 || $statusCode > 300) {
+            throw new \Exception('Failed to unregister webhook, form_id: ' . $formId . ', tag: ' . $tag);
+        }
+        return true;
+    }
+
+    /**
+     * @param Form $form
+     * @param array $fields
+     */
+    public function removeHiddenFields(Form $form, $fields)
+    {
+        $form->removeHiddenFields($fields);
+
+        $this->http->put(
+            "/forms/" . $form->id,
+            [
+                'json' => (array)$form->getRaw()
+            ]
+        );
     }
 }

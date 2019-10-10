@@ -124,6 +124,23 @@ class Form
 
             $this->raw->hidden = array_merge($fields, $this->raw->hidden);
         }
+
+        $this->hidden = $this->raw->hidden;
+    }
+
+    /**
+     * Add hidden fields
+     */
+    public function removeHiddenFields($fields)
+    {
+        if(empty($this->raw->hidden))
+        {
+            throw new \LogicException("Try to remove hidden fields but hidden fields is empty");
+        }
+
+        $this->raw->hidden = array_diff($this->raw->hidden, $fields);
+
+        $this->hidden = $this->raw->hidden;
     }
 
     public function getRaw()
