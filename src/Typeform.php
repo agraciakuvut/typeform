@@ -54,11 +54,65 @@ class Typeform
     /**
      * Get form responses
      * @param $formId
+     * @param $parameters - Can be [page_size, since, until, after, before, included_response_ids, completed, sort, query, fields]
      * @return array
      */
-    public function getResponses($formId)
-    {
-        $response = $this->http->get("/forms/" . $formId . "/responses");
+    public function getResponses(
+        $formId,
+        $parameters = []
+    ) {
+        $q = [];
+
+        if (!empty($parameters['page_size'])) {
+            $q[] = "page_size=" . $parameters['page_size'];
+        }
+
+        if (!empty($parameters['since'])) {
+            $q[] = "since=" . $parameters['since'];
+        }
+
+        if (!empty($parameters['until'])) {
+            $q[] = "until=" . $parameters['until'];
+        }
+
+        if (!empty($parameters['after'])) {
+            $q[] = "after=" . $parameters['after'];
+        }
+
+        if (!empty($parameters['before'])) {
+            $q[] = "before=" . $parameters['before'];
+        }
+
+        if (!empty($parameters['included_response_ids'])) {
+            $q[] = "included_response_ids=" . $parameters['included_response_ids'];
+        }
+
+        if (!empty($parameters['completed'])) {
+            $q[] = "completed=" . $parameters['completed'];
+        }
+
+        if (!empty($parameters['sort'])) {
+            $q[] = "sort=" . $parameters['sort'];
+        }
+
+        if (!empty($parameters['query'])) {
+            $q[] = "query=" . $parameters['query'];
+        }
+
+        if (!empty($parameters['fields'])) {
+            $q[] = "fields=" . $parameters['fields'];
+        }
+
+        $query = '';
+
+        if (!empty($q)) {
+            array_walk($q, function ($v) {
+                return urldecode($v);
+            });
+            $query = "?" . implode("&", $q);
+        }
+
+        $response = $this->http->get("/forms/" . $formId . "/responses$query");
         $body = json_decode($response->getBody());
         $responses = [];
         if (isset($body->items)) {
