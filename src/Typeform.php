@@ -113,14 +113,14 @@ class Typeform
         }
 
         $response = $this->http->get("/forms/" . $formId . "/responses$query");
-        $body = json_decode($response->getBody());
-        $responses = [];
-        if (isset($body->items)) {
-            foreach ($body->items as $item) {
-                $responses[] = new FormResponse($item);
-            }
-        }
-        return $responses;
+        return json_decode($response->getBody());
+        //$responses = [];
+        //if (isset($body->items)) {
+        //    foreach ($body->items as $item) {
+        //        $responses[] = new FormResponse($item);
+        //    }
+        //}
+        //return $responses;
     }
 
     /**
