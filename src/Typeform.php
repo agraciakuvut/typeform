@@ -223,4 +223,20 @@ class Typeform
             ]
         );
     }
+
+    /**
+     * @param string $fomrId
+     * @param array $reponseTokens
+     * @throws \Exception
+     */
+    public function deleteResponses(string $fomrId, array $reponseTokens)
+    {
+        if (sizeof($reponseTokens) > 1000) {
+            throw new \Exception('Limit for deleting responses (1000) exceded');
+        }
+
+        $this->http->delete(
+            "/forms/" . $fomrId . "/responses?included_tokens=" . urlencode(implode(',', $reponseTokens))
+        );
+    }
 }
