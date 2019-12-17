@@ -40,6 +40,36 @@ class Typeform
     }
 
     /**
+     * @param string $url
+     * @return string
+     * @throws \Exception
+     */
+    public function getIdFromUrl(string $url): string
+    {
+        $urlParts = parse_url($url);
+
+        if ($urlParts['scheme'] != 'https') {
+            $urlParts['scheme'] = 'https';
+        }
+
+        if (substr($urlParts['host'], -12) != 'typeform.com') {
+            throw new \Exception('Url typeform invalid');
+        }
+
+        if (substr($urlParts['path'], 0, 4) != '/to/') {
+            throw new \Exception('Url typeform invalid');
+        }
+
+        $formId = substr($urlParts['path'], 4);
+
+        if (empty($formId)) {
+            throw new \Exception('Url typeform invalid');
+        }
+
+        return $formId;
+    }
+
+    /**
      * Get form information
      * @param $formId
      * @return Form
