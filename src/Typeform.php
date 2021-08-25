@@ -4,7 +4,6 @@ namespace WATR;
 
 use GuzzleHttp\Client;
 use WATR\Models\Form;
-use WATR\Models\FormResponse;
 use WATR\Models\Webhook;
 use WATR\Models\WebhookResponse;
 
@@ -79,6 +78,84 @@ class Typeform
         $response = $this->http->get("/forms/" . $formId);
         $body = json_decode($response->getBody());
         return new Form($body);
+    }
+
+    /**
+     * Create form with raw properties
+     * https://developer.typeform.com/create/reference/create-form/
+     * @return Form
+     * @throws \Exception
+     */
+    public function createFormRaw(array $properties)
+    {
+        $response = $this->http->post(
+            "/forms",
+            [
+                'json' => $properties
+            ]
+        );
+
+        $statusCode = $response->getStatusCode();
+
+        if ($statusCode < 200 || $statusCode > 300) {
+            throw new \Exception('Failed to create typeform');
+        }
+
+        $body = json_decode($response->getBody());
+        return new Form($body);
+    }
+
+    /**
+     * Edit form with raw properties
+     * https://developer.typeform.com/create/reference/update-form/
+     * @return Form
+     * @throws \Exception
+     */
+    public function updateFormRaw(string $formId, array $properties)
+    {
+        $response = $this->http->put(
+            "/forms/" . $formId,
+            [
+                'json' => $properties
+            ]
+        );
+
+        $statusCode = $response->getStatusCode();
+
+        if ($statusCode < 200 || $statusCode > 300) {
+            throw new \Exception('Failed to create typeform');
+        }
+
+        $body = json_decode($response->getBody());
+        return new Form($body);
+    }
+
+    /**
+     * Adds an image in your Typeform account.
+     * https://developer.typeform.com/create/reference/create-image/
+     * @param $url
+     * @return string
+     * @throws \Exception
+     */
+    public function createImage(string $url)
+    {
+        $response = $this->http->post(
+            "/images",
+            [
+                'json' => [
+                    "url" => $url
+                ]
+            ]
+        );
+
+        $statusCode = $response->getStatusCode();
+
+        if ($statusCode < 200 || $statusCode > 300) {
+            throw new \Exception('Failed to create image');
+        }
+
+        $body = json_decode($response->getBody());
+        return $response->getHeader("location")[0];
     }
 
     /**

@@ -80,10 +80,8 @@ class Form
         $this->workspace = new Reference($json->workspace);
         $this->settings = new Setting($json->settings);
 
-        if(isset($json->welcome_screens))
-        {
-            foreach($json->welcome_screens as $screen)
-            {
+        if (isset($json->welcome_screens)) {
+            foreach ($json->welcome_screens as $screen) {
                 array_push($this->welcome_screens, new Screen($screen));
             }
         }
@@ -102,10 +100,8 @@ class Form
             }
         }
 
-        if(isset($json->hidden))
-        {
-            foreach($json->hidden as $hid)
-            {
+        if (isset($json->hidden)) {
+            foreach ($json->hidden as $hid) {
                 array_push($this->hidden, $hid);
             }
         }
@@ -116,8 +112,7 @@ class Form
      */
     public function addHiddenFields($fields)
     {
-        if(!isset($this->raw->hidden))
-        {
+        if (!isset($this->raw->hidden)) {
             $this->raw->hidden = $fields;
         } else {
             $fields = array_diff($fields, $this->raw->hidden);
@@ -133,14 +128,18 @@ class Form
      */
     public function removeHiddenFields($fields)
     {
-        if(empty($this->raw->hidden))
-        {
+        if (empty($this->raw->hidden)) {
             throw new \LogicException("Try to remove hidden fields but hidden fields is empty");
         }
 
         $this->raw->hidden = array_diff($this->raw->hidden, $fields);
 
         $this->hidden = $this->raw->hidden;
+    }
+
+    public function link()
+    {
+        return $this->raw->_links->display;
     }
 
     public function getRaw()
